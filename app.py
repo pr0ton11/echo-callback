@@ -78,5 +78,5 @@ if __name__ == "__main__":
     Entrypoint
     """
     config = Config()
-    config.bind = "[::]:80"
+    config.bind = "[::]:3000"
     asyncio.run(serve(app, config))

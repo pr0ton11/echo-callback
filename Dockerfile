@@ -8,6 +8,6 @@ RUN pip install -r requirements.txt
 
 EXPOSE 3000
 
-ENV BEHIND_PROXY=false
+ENV BEHIND_HTTPS_PROXY "false"
 
 ENTRYPOINT [ "python", "app.py" ]

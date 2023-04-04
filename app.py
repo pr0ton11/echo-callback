@@ -13,7 +13,7 @@ from fastapi_utils.tasks import repeat_every
 
 CLEANUP_ENDPOINTS_MIN = 5  # How many minutes the server waits to cleanup old endpoints
 
-ENV_BEHIND_PROXY = "BEHIND_PROXY" # env to set http:// to https:// replacement
+ENV_BEHIND_PROXY = "BEHIND_HTTPS_PROXY" # env to set http:// to https:// replacement
 IS_BEHIND_PROXY = os.getenv(ENV_BEHIND_PROXY, "false").lower() == "true"
 
 endpoints = {}  # In memory endpoint data
@@ -61,15 +61,22 @@ async def write_data(endpoint: str, request: Request):
     if bool(endpoints[endpoint].data):
         raise HTTPException(status_code=403, detail="Data has already been written to this endpoint")
     endpoints[endpoint].data = await request.json()
-    return {"msg": f"Sucessfully written your data to key {endpoint}"}
+    return {"msg": f"Sucessfully written your data to key {endpoint}, you can close this window"}
 
 @app.get("/{endpoint}")
-async def get_data(endpoint: str):
+async def get_data(endpoint: str, code: str | None = None, state: str | None = None):
     """ 
     Retrieves the data from the in memory dict and sends it to the client
+    When code and state is defined as param, write this data instead to the data endpoint
     """
     if endpoint not in endpoints:
         raise HTTPException(status_code=404, detail="Endpoint not found")
+    if code and state:
+        endpoints[endpoint].data = {
+            "code": code,
+            "state": state
+        }
+        return {"msg": f"Sucessfully written your data to key {endpoint}, you can close this window"}
     if not bool(endpoints[endpoint].data):
         raise HTTPException(status_code=425, detail="Data has not been written to this endpoint yet")
     data = endpoints[endpoint].data

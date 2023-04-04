@@ -20,15 +20,17 @@ endpoints = {}  # In memory endpoint data
 
 app = FastAPI()  # FastAPI app instance
 
-def replace_protocol(url: str) -> str:
+def replace_protocol(url) -> str:
     """
     Replaces protocol in url and returns it
     """
 
-    if IS_BEHIND_PROXY:
-        return url.replace("http://", "https://")
+    str_url = str(url)
 
-    return url
+    if IS_BEHIND_PROXY:
+        return str_url.replace("http://", "https://")
+
+    return str_url
 
 class Endpoint:
     """

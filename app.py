@@ -1,6 +1,7 @@
 import asyncio
 import datetime
 import uuid
+import os
 
 from hypercorn.config import Config
 from hypercorn.asyncio import serve
@@ -12,9 +13,22 @@ from fastapi_utils.tasks import repeat_every
 
 CLEANUP_ENDPOINTS_MIN = 5  # How many minutes the server waits to cleanup old endpoints
 
+ENV_BEHIND_PROXY = "BEHIND_PROXY" # env to set http:// to https:// replacement
+IS_BEHIND_PROXY = os.getenv(ENV_BEHIND_PROXY, "false").lower() == "true"
+
 endpoints = {}  # In memory endpoint data
 
 app = FastAPI()  # FastAPI app instance
+
+def replace_protocol(url: str) -> str:
+    """
+    Replaces protocol in url and returns it
+    """
+
+    if IS_BEHIND_PROXY:
+        return url.replace("http://", "https://")
+
+    return url
 
 class Endpoint:
     """
@@ -35,7 +49,7 @@ async def get_endpoint(request: Request):
     # Add endpoint to dict
     endpoints[endpoint.id] = endpoint
     # Return the URL
-    return {"url": f"{request.url}{endpoint.id}"}
+    return {"url": f"{replace_protocol(request.url)}{endpoint.id}"}
 
 @app.post("/{endpoint}")
 async def write_data(endpoint: str, request: Request):

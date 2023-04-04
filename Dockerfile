@@ -8,4 +8,6 @@ RUN pip install -r requirements.txt
 
 EXPOSE 3000
 
+ENV BEHIND_PROXY=false
+
 ENTRYPOINT [ "python", "app.py" ]
